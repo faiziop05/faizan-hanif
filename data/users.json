@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1773176367398,
+    "email": "testuser@abc.com",
+    "password": "$2b$10$0FCaiVzpQhsLmLseRLShs.Up.NxigkD/NnHzn52aw/F57320ZxHUe",
+    "role": "admin",
+    "failedLoginAttempts": 0,
+    "lockUntil": null
+  }
+]
