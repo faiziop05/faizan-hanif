@@ -1,5 +1,6 @@
 const { validTiers } = require("../utils/constants");
 const { readData, saveData } = require("../utils/database");
+const { fireWebhooks } = require("../utils/webhookSender");
 
 const addMerchant = async (req, res) => {
   try {
@@ -257,6 +258,11 @@ const changeMerchantStatus = async (req, res) => {
 
     allAuditLogs.push(newLog);
     saveData("auditLogs", allAuditLogs);
+
+
+    if (newStatus === "Active" || newStatus === "Suspended") {
+      fireWebhooks(merchant.id, currentStatus, newStatus); 
+    }
 
     return res.status(200).json({
       message: `Merchant status successfully changed from ${currentStatus} to ${newStatus}.`,

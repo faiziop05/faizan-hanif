@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const AuthRoute = require("./routes/AuthRoute");
 const MerchentRoute = require("./routes/MerchantRoute");
+const WebhookRouter = require("./routes/WebhookRouter");
 const port = 3000;
 
 app.use(express.json()); 
@@ -11,7 +12,8 @@ app.get("/", (request, response) => {
 });
 
 app.use("/api/auth", AuthRoute);
-app.use("/api/merchant", MerchentRoute);
+app.use("/api/merchants", MerchentRoute);
+app.post("/api/webhooks", WebhookRouter);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
