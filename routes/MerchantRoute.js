@@ -9,25 +9,24 @@ const {
   editMerchantDetails, 
   changeMerchantStatus, 
   deleteMerchant,
-  changePricingTier    
+  changePricingTier,    
+  getMerchantAuditLogs
 } = require("../contollers/MerchantContoller");
 
 const { verifyDocument, uploadDocument } = require("../contollers/DocumentsContoller");
 
-router.post("/api/merchants", verifyToken, addMerchant);
 
-router.get("/api/merchants", verifyToken, getMerchants);
-router.get("/api/merchants/:id", verifyToken, getMerchantById);
+router.post("/", verifyToken, addMerchant);                
+router.get("/", verifyToken, getMerchants);                
+router.get("/:id", verifyToken, getMerchantById);         
+router.patch("/:id", verifyToken, editMerchantDetails);   
+router.delete("/:id", verifyToken, deleteMerchant);       
 
-router.patch("/api/merchants/:id", verifyToken, editMerchantDetails);
+router.patch("/:id/tier", verifyToken, changePricingTier);
+router.get("/:id/auditlogs", verifyToken, getMerchantAuditLogs);
+router.patch("/:id/status", verifyToken, changeMerchantStatus);
 
-router.delete("/api/merchants/:id", verifyToken, deleteMerchant);
-
-router.patch("/api/merchants/:id/tier", verifyToken, changePricingTier);
-
-
-router.patch("/api/merchants/:id/documents/upload", verifyToken, uploadDocument);
-router.patch("/api/merchants/:id/documents/verify", verifyToken, verifyDocument);
-router.patch("/api/merchants/:id/status", verifyToken, changeMerchantStatus);
+router.patch("/:id/documents/upload", verifyToken, uploadDocument);
+router.patch("/:id/documents/verify", verifyToken, verifyDocument);
 
 module.exports = router;

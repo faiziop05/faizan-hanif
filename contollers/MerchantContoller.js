@@ -244,6 +244,20 @@ const changeMerchantStatus = async (req, res) => {
     allMerchants[merchantIndex] = merchant;
     saveData("merchants", allMerchants);
 
+    const allAuditLogs = readData("auditLogs") || []; 
+
+    const newLog = {
+      logId: Date.now().toString().concat("log"),
+      merchantId: merchant.id,
+      operatorEmail: req.user.email,
+      oldStatus: currentStatus,
+      newStatus: newStatus,
+      timestamp: new Date().toISOString()
+    };
+
+    allAuditLogs.push(newLog);
+    saveData("auditLogs", allAuditLogs);
+
     return res.status(200).json({
       message: `Merchant status successfully changed from ${currentStatus} to ${newStatus}.`,
       merchant: merchant,
@@ -295,6 +309,47 @@ const changePricingTier = async (req, res) => {
   }
 };
 
+
+const getMerchantAuditLogs = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const allMerchants = readData("merchants");
+    const merchantExists = allMerchants.some((m) => m.id === id);
+    if (!merchantExists) {
+      return res.status(404).json({ message: "Merchant not found." });
+    }
+
+    const allAuditLogs = readData("auditlogs") || [];
+    
+    const merchantLogs = allAuditLogs.filter((log) => log.merchantId === id);
+
+    merchantLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const paginatedLogs = merchantLogs.slice(startIndex, endIndex);
+
+    const totalPages = Math.ceil(merchantLogs.length / limit);
+
+    return res.status(200).json({
+      message: "Audit logs retrieved successfully",
+      count: paginatedLogs.length,        
+      totalItems: merchantLogs.length,    
+      totalPages: totalPages,             
+      currentPage: page,                  
+      logs: paginatedLogs                
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   addMerchant,
   getMerchants,
@@ -303,4 +358,5 @@ module.exports = {
   changeMerchantStatus,
   deleteMerchant,
   changePricingTier,
+  getMerchantAuditLogs
 };
