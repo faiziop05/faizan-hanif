@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const AuthRoute = require("./routes/AuthRoute");
@@ -13,7 +14,7 @@ app.get("/", (request, response) => {
 
 app.use("/api/auth", AuthRoute);
 app.use("/api/merchants", MerchentRoute);
-app.post("/api/webhooks", WebhookRouter);
+app.use("/api/webhooks", WebhookRouter);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

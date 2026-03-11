@@ -1,1 +1,27 @@
-[]
+[
+  {
+    "id": "1773255620950mer",
+    "name": "Global Tech Supplies",
+    "category": "Electronics",
+    "city": "Manchester",
+    "country": "UK",
+    "contactEmail": "hello@globaltech.com",
+    "status": "Active",
+    "pricingTier": "Pro",
+    "documents": {
+      "businessRegistration": {
+        "uploaded": true,
+        "verified": true
+      },
+      "ownerId": {
+        "uploaded": true,
+        "verified": true
+      },
+      "bankProof": {
+        "uploaded": true,
+        "verified": true
+      }
+    },
+    "createdAt": "2026-03-11T19:00:20.950Z"
+  }
+]

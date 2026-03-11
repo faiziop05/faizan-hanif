@@ -1,8 +1,8 @@
 [
   {
-    "id": 1773176367398,
-    "email": "testuser@abc.com",
-    "password": "$2b$10$0FCaiVzpQhsLmLseRLShs.Up.NxigkD/NnHzn52aw/F57320ZxHUe",
+    "id": 1773254812862,
+    "email": "admin@yqnpay.com",
+    "password": "$2b$10$Sst/x1hSRQSw/jONDJNWOOztV48mOCKsD8SfwZka9qzmeZMECw2pq",
     "role": "admin",
     "failedLoginAttempts": 0,
     "lockUntil": null
