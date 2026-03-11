@@ -1,3 +1,4 @@
+const { validTiers } = require("../utils/constants");
 const { readData, saveData } = require("../utils/database");
 
 const addMerchant = async (req, res) => {
@@ -27,6 +28,7 @@ const addMerchant = async (req, res) => {
       country,
       contactEmail,
       status: "Pending KYB",
+      pricingTier: "Standard",
       documents: {
         businessRegistration: { uploaded: false, verified: false },
         ownerId: { uploaded: false, verified: false },
@@ -156,9 +158,149 @@ const editMerchantDetails = async (req, res) => {
   }
 };
 
+const deleteMerchant = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message:
+          "Access denied. Only admin-level operators can delete merchants.",
+      });
+    }
+
+    const { id } = req.params;
+    const allMerchants = readData("merchants");
+
+    const merchantIndex = allMerchants.findIndex((m) => m.id === id);
+    if (merchantIndex === -1) {
+      return res.status(404).json({ message: "Merchant not found." });
+    }
+
+    allMerchants.splice(merchantIndex, 1);
+    saveData("merchants", allMerchants);
+
+    return res.status(200).json({ message: "Merchant deleted successfully." });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const changeMerchantStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { newStatus } = req.body;
+
+    const validStatuses = ["Pending KYB", "Active", "Suspended"];
+    if (!validStatuses.includes(newStatus)) {
+      return res.status(400).json({
+        message:
+          "Invalid status. Must be 'Pending KYB', 'Active', or 'Suspended'.",
+      });
+    }
+
+    const allMerchants = readData("merchants");
+    const merchantIndex = allMerchants.findIndex((m) => m.id === id);
+
+    if (merchantIndex === -1) {
+      return res.status(404).json({ message: "Merchant not found." });
+    }
+
+    let merchant = allMerchants[merchantIndex];
+    const currentStatus = merchant.status;
+
+    if (currentStatus === newStatus) {
+      return res.status(400).json({
+        message: `Merchant is already marked as ${currentStatus}.`,
+      });
+    }
+    if (newStatus === "Active") {
+      const docs = merchant.documents;
+      if (
+        !docs.businessRegistration.verified ||
+        !docs.ownerId.verified ||
+        !docs.bankProof.verified
+      ) {
+        return res.status(400).json({
+          message:
+            "Cannot approve merchant. All three documents (Business Registration, Owner ID, Bank Proof) must be uploaded and verified first.",
+        });
+      }
+    }
+
+    if (currentStatus === "Suspended" && newStatus === "Pending KYB") {
+      return res.status(400).json({
+        message:
+          "Invalid status change. A suspended account cannot be moved back to Pending KYB.",
+      });
+    }
+
+    if (currentStatus === "Active" && newStatus === "Pending KYB") {
+      return res.status(400).json({
+        message:
+          "Invalid status change. An active account cannot be downgraded to Pending KYB. Suspend the account instead.",
+      });
+    }
+
+    merchant.status = newStatus;
+    allMerchants[merchantIndex] = merchant;
+    saveData("merchants", allMerchants);
+
+    return res.status(200).json({
+      message: `Merchant status successfully changed from ${currentStatus} to ${newStatus}.`,
+      merchant: merchant,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const changePricingTier = async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({
+        message:
+          "Access denied. Only admin-level operators can change pricing tiers.",
+      });
+    }
+
+    const { id } = req.params;
+    const { newTier } = req.body;
+
+    if (!newTier) {
+      return res.status(400).json({ message: "Please provide a newTier." });
+    }
+
+    if (!validTiers.includes(newTier)) {
+      return res.status(400).json({
+        message:
+          "Invalid pricing tier. Must be 'Starter', 'Pro', or 'Enterprise'.",
+      });
+    }
+
+    const allMerchants = readData("merchants");
+    const merchantIndex = allMerchants.findIndex((m) => m.id === id);
+
+    if (merchantIndex === -1) {
+      return res.status(404).json({ message: "Merchant not found." });
+    }
+
+    allMerchants[merchantIndex].pricingTier = newTier;
+    saveData("merchants", allMerchants);
+
+    return res.status(200).json({
+      message: `Pricing tier successfully updated to ${newTier}.`,
+      merchant: allMerchants[merchantIndex],
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
 module.exports = {
   addMerchant,
   getMerchants,
   getMerchantById,
   editMerchantDetails,
+  changeMerchantStatus,
+  deleteMerchant,
+  changePricingTier,
 };

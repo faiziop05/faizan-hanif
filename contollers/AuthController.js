@@ -71,4 +71,25 @@ const LoginUser = async (req, res) => {
   }
 };
 
-module.exports = { LoginUser };
+
+const refreshAuthToken = async (req, res) => {
+  try {
+    const { id, email, role } = req.user;
+
+    const newPayload = { id, email, role };
+
+    const newToken = jwt.sign(newPayload, process.env.JWT_KEY, {
+      expiresIn: "15m",
+    });
+
+    return res.status(200).json({
+      message: "Token refreshed successfully",
+      token: newToken,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+module.exports = { LoginUser, refreshAuthToken };
+
